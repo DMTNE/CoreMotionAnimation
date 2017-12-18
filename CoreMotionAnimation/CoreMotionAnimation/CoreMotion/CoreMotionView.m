@@ -163,6 +163,7 @@
     CAShapeLayer *layerLine= [CAShapeLayer layer];
     layerLine.path=pathLine.CGPath;
     layerLine.lineWidth=5;
+    layerLine.lineCap=kCALineCapRound;
     layerLine.strokeColor=[UIColor blackColor].CGColor;
     [self.layer addSublayer:layerLine];
     

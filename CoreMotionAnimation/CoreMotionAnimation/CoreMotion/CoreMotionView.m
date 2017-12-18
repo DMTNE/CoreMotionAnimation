@@ -12,12 +12,12 @@
 #define HEIGHTOFSCREEN [[UIScreen mainScreen] bounds].size.height
 #define WIDTHOFSCREEN [[UIScreen mainScreen] bounds].size.width
 //#define ROADWIDTH 40 //宽度
-#define XCount 9//X轴个数
+#define XCount 10//X轴个数
 #define YCount 15//Y轴个数
 
 @interface CoreMotionView()<UICollisionBehaviorDelegate>{
     NSMutableArray *directionArray;//运动方向
-    int XROADWIDTH;
+    int XROADWIDTH;//宽度
     int YROADWIDTH;
 //    int XCount;//X轴个数
 //    int YCount;//Y轴个数
@@ -67,14 +67,14 @@
     _collisionBehavior.translatesReferenceBoundsIntoBoundary = YES;
 
     _gravityBehavior = [[UIGravityBehavior alloc]init];
-    
+
     //行为放入动画
     [_dynamicAnimator addBehavior:_dynamicItemBehavior];
     [_dynamicAnimator addBehavior:_collisionBehavior];
     [_dynamicAnimator addBehavior:_gravityBehavior];
     
 }
-
+//开始生成路径
 -(void)createRoad{
 //    XCount= WIDTHOFSCREEN/ROADWIDTH+1;
 //    YCount= HEIGHTOFSCREEN/ROADWIDTH+1;
@@ -98,17 +98,12 @@
         }
         [roadArray addObject:array];
     }
-
+    [self BezierPath:@"line" pathStartPoint:CGPointMake(0,0) pathEndPoint:CGPointMake(0,HEIGHTOFSCREEN)];
     [self visitedRoad:StartX Y:StartY];
     [self findNextRoad:StartX Y:StartY];
     
-    for (int i=0; i<XCount*YCount; i++){
-      if (![self ifAllVisited]) {
+    while (![self ifAllVisited]) {
         [self findNextRoad:StartX Y:StartY];
-      }
-//      if ([roadArray[XCount-1][YCount-1] isEqualToString:@"1"]) {
-//           break;
-//        }
     }
 
     for (int i=0; i<pathArray.count-1; i++) {
@@ -129,7 +124,7 @@
         int x=StartX+[directionArray[count][0] intValue];
         int y=StartY+[directionArray[count][1] intValue];
         
-        if (x>0&&y>0&&x<XCount&&y<YCount&&[roadArray[x][y] isEqualToString:@"0"]) {
+        if (x>0&&y>=0&&x<XCount&&y<YCount&&[roadArray[x][y] isEqualToString:@"0"]) {
             StartX=x;
             StartY=y;
             BackCount=1;
@@ -148,7 +143,7 @@
     [pathArray addObject:[NSString stringWithFormat:@"%d,%d",StartX,StartY]];
     [self findNextRoad:StartX Y:StartY];
 }
-
+//是否遍历完全
 -(BOOL)ifAllVisited{
     for (int i=1; i<XCount; i++) {
         for (int j=1; j<YCount; j++) {
@@ -159,7 +154,7 @@
     }
     return true;
 }
-
+//创建路径
 -(void)BezierPath:(NSString *)pathName pathStartPoint:(CGPoint)pathStartPoint pathEndPoint:(CGPoint)pathEndPoint{
     UIBezierPath *pathLine = [UIBezierPath bezierPath];
     [pathLine moveToPoint:pathStartPoint];
@@ -171,7 +166,6 @@
     layerLine.strokeColor=[UIColor blackColor].CGColor;
     [self.layer addSublayer:layerLine];
     
-//    [_collisionBehavior addBoundaryWithIdentifier:pathName forPath:pathLine];
     [_collisionBehavior addBoundaryWithIdentifier:pathName fromPoint:pathStartPoint toPoint:pathEndPoint];
 }
 
